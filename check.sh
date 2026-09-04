@@ -20,6 +20,8 @@ echo "== 들어가야 하는 것 =="
 chk "전역 규칙 (.codex-home/AGENTS.md)" yes "양성 대조를 먼저"
 chk "레포 규칙 (AGENTS.md)"          yes "60초 데모 대본이 스펙"
 chk "제품 미정 명시"                  yes "제품은 아직 정해지지 않았다"
+chk "대회 맥락"                       yes "사회에 필요한 문제"
+chk "심사배점 미확인 표시"            yes "심사 배점 미확인"
 chk "systematic-debugging 스킬"       yes "systematic-debugging"
 
 echo "== 들어가면 안 되는 것 =="
