@@ -1,7 +1,9 @@
+import json
+
 from fastapi.testclient import TestClient
 
 from app import main
-from app.ai import LanguageCorrection, LanguageFeedback, ScenePlan
+from app.ai import LanguageCorrection, LanguageFeedback, ScenePlan, SceneSlot, ScoringSlot
 
 
 class FakeRehearsalAI:
@@ -21,10 +23,18 @@ class FakeRehearsalAI:
             channel_zh="电话",
             required_information_zh=["下个月开始", "暂停两个月", "之后想重新上课"],
             teacher_question_ko="언제부터 얼마나 쉬실 예정인가요?",
+            scoring_slots=[
+                SceneSlot(id="start_month", label_zh="下个月开始"),
+                SceneSlot(id="pause_duration", label_zh="暂停两个月"),
+                SceneSlot(id="re_enroll", label_zh="之后想重新上课"),
+            ],
         )
 
     def coach_language(
-        self, teacher_question: str, transcript: str
+        self,
+        teacher_question: str,
+        transcript: str,
+        scoring_slots: list[ScoringSlot],
     ) -> LanguageFeedback:
         return LanguageFeedback(
             spoken_ko=transcript,
@@ -38,6 +48,7 @@ class FakeRehearsalAI:
                 )
             ],
             target_sentence_ko="다음 달부터 두 달 동안 아이 학원을 쉬고 싶어요.",
+            covered_slot_ids=["start_month", "pause_duration", "re_enroll"],
         )
 
 
@@ -60,9 +71,20 @@ def test_live_first_round_keeps_the_partner_frontend_contract(monkeypatch):
     assert context.json()["turn_plan"][2]["teacher_question_ko"] == (
         "다시 시작하는 것에 대해 궁금한 점이 있으세요?"
     )
+    assert context.json()["scoring_slots"] == [
+        {"id": "start_month", "label_zh": "下个月开始", "weight": 40},
+        {"id": "pause_duration", "label_zh": "暂停两个月", "weight": 35},
+        {"id": "re_enroll", "label_zh": "之后想重新上课", "weight": 25},
+    ]
 
     first = client.post(
-        "/api/attempts?attempt=first&turn=1&teacher_question=안녕하세요",
+        "/api/attempts",
+        params={
+            "attempt": "first",
+            "turn": 1,
+            "teacher_question": "안녕하세요",
+            "scoring_slots": json.dumps(context.json()["scoring_slots"]),
+        },
         content=b"audio",
         headers={"content-type": "audio/webm"},
     )

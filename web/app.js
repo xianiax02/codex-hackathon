@@ -12,6 +12,7 @@ let currentTurn = 1;
 let turnPlan = [];
 let tomorrowCard = null;
 let firstContour = [];
+let scoringSlots = [];
 const collectedTargets = [];
 
 const $ = (selector) => document.querySelector(selector);
@@ -169,6 +170,7 @@ function renderContext(context) {
   renderAnalysisMode(context.analysis_mode);
   maxTurns = context.max_turns || 3;
   turnPlan = context.turn_plan || [];
+  scoringSlots = context.scoring_slots || [];
   $("#mission-title").textContent = context.mission;
   $("#mission-detail").textContent = context.mission_detail;
   $("#source-transcript").textContent = context.source_transcript;
@@ -273,6 +275,7 @@ $("#answer-record").addEventListener("click", async (event) => {
       attempt: "first",
       turn: String(currentTurn),
       teacher_question: turnPlan[currentTurn - 1]?.teacher_question_ko || "",
+      scoring_slots: JSON.stringify(scoringSlots),
     });
     const [result, contour] = await Promise.all([
       postAudio(`/api/attempts?${parameters}`, blob),

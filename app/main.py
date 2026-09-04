@@ -6,14 +6,15 @@ from typing import Literal, Optional
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import TypeAdapter, ValidationError
 
-from app.ai import RehearsalAI, Settings
+from app.ai import RehearsalAI, ScoringSlot, Settings, make_scoring_slots
 from app.demo_fixture import TURN_PLAN, attempt_fixture, context_fixture
 from app.scoring import (
-    first_attempt_score,
     missing_target_words,
     pronunciation_status,
     retry_score,
+    semantic_slot_score,
 )
 
 
@@ -23,6 +24,7 @@ WEB_DIR = ROOT / "web"
 app = FastAPI(title="모두의 한국어", version="0.1.0")
 settings = Settings()
 rehearsal_ai = RehearsalAI(settings) if settings.has_openai_key else None
+scoring_slots_adapter = TypeAdapter(list[ScoringSlot])
 
 
 async def require_audio(request: Request) -> bytes:
@@ -34,6 +36,16 @@ async def require_audio(request: Request) -> bytes:
     if not audio:
         raise HTTPException(status_code=422, detail="녹음된 audio가 없습니다")
     return audio
+
+
+def parse_scoring_slots(raw_slots: str | None) -> list[ScoringSlot] | None:
+    if raw_slots is None:
+        return None
+    try:
+        slots = scoring_slots_adapter.validate_json(raw_slots)
+    except ValidationError:
+        return None
+    return slots if sum(slot.weight for slot in slots) == 100 else None
 
 
 @app.get("/api/health")
@@ -69,6 +81,9 @@ async def create_context(request: Request):
             "purpose": scene.purpose_zh,
             "channel": scene.channel_zh,
             "required_information": scene.required_information_zh,
+            "scoring_slots": [
+                slot.model_dump() for slot in make_scoring_slots(scene.scoring_slots)
+            ],
             "max_turns": 3,
             "turn_plan": [
                 {
@@ -91,6 +106,7 @@ async def analyze_attempt(
     teacher_question: Optional[str] = Query(None, max_length=200),
     target_sentence: Optional[str] = Query(None, max_length=300),
     previous_score: Optional[int] = Query(None, ge=0, le=100),
+    scoring_slots: Optional[str] = Query(None, max_length=1000),
 ):
     audio = await require_audio(request)
     if not rehearsal_ai or turn != 1:
@@ -142,13 +158,18 @@ async def analyze_attempt(
             }
         )
 
-    feedback = rehearsal_ai.coach_language(question, transcript)
+    slots = parse_scoring_slots(scoring_slots)
+    if slots is None:
+        return JSONResponse(attempt_fixture(turn, attempt))
+
+    feedback = rehearsal_ai.coach_language(question, transcript, slots)
     if not feedback:
         return JSONResponse(attempt_fixture(turn, attempt))
 
     correction = feedback.corrections[0] if feedback.corrections else None
     target = feedback.target_sentence_ko.strip() or transcript
-    score = first_attempt_score(transcript)
+    covered_slot_ids = set(feedback.covered_slot_ids)
+    score = semantic_slot_score(slots, covered_slot_ids)
     return JSONResponse(
         {
             "analysis_mode": "live",

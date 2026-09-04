@@ -1,22 +1,17 @@
+from collections.abc import Collection, Sequence
 import re
+
+from app.ai import ScoringSlot
 
 
 def _hangul_only(text: str) -> str:
     return "".join(re.findall(r"[가-힣]", text))
 
 
-def first_attempt_score(transcript: str) -> int:
-    normalized = _hangul_only(transcript)
-    score = 0
-    if "다음달" in normalized:
-        score += 30
-    if "두달" in normalized:
-        score += 30
-    if "학원" in normalized and any(
-        marker in normalized for marker in ("쉬", "휴원", "잠시중단")
-    ):
-        score += 40
-    return score
+def semantic_slot_score(
+    slots: Sequence[ScoringSlot], covered_slot_ids: Collection[str]
+) -> int:
+    return sum(slot.weight for slot in slots if slot.id in covered_slot_ids)
 
 
 def retry_score(target_sentence: str, transcript: str) -> int:
