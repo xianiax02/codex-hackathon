@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://tomorrows-korean.local/ai/response-shapes.json",
-  "title": "Tomorrow Korean AI response shapes",
+  "$id": "https://modu-korean.local/ai/response-shapes.json",
+  "title": "Modu Korean AI response shapes",
   "oneOf": [
     {
       "type": "object",
