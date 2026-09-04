@@ -11,5 +11,6 @@
 | 15:25–진행 중 | 역할 분담 문서화 | 준현님(Sol)의 앱 통합 소유권과 유현님의 AI 계약 소유권을 파일 경계까지 분리 | `docs/roles.md`에서 소유 파일·통합 계약·작업 순서가 겹치지 않는지 검토 | 프론트·백·통합은 준현님, 모델·프롬프트·AI 계약은 유현님으로 확정 |
 | 16:35–16:45 | 승인된 스펙 그대로 준현님 범위 구현 | FastAPI shell, 1:2 bilingual UI, 실제 microphone 녹음·audio upload, 두 축 fixture feedback, retry와 내일 카드를 구현 | API 6건과 state transition 3건 test, 1280×800 Chrome render, empty audio 422 양성 대조로 검증 | 숫자형 발음 전달도와 중국어 음성 입력을 유지하고 `ai/`·AI spec은 수정하지 않도록 범위를 고정 |
 | 17:00–진행 중 | Backend 연결 가능한 3-turn draft 요청 | raw-audio API에 `turn=1..3` scope와 fixture를 추가하고 UI가 질문·feedback·retry를 세 turn 반복하도록 변경 | API 8건, state transition 3건, smoke test 통과 | 서비스명을 `모두의 한국어`로 확정하고 한 turn 종료 대신 장면 생성 시 3-turn 범위를 고정 |
+| 17:05–진행 중 | first/retry 음고 graph 추가 | 실제 browser audio에서 YIN으로 75–500Hz pitch를 추출하고 speaker-relative semitone SVG를 overlay | 220Hz sine 검출, silence abstention, semitone normalization 3건 test와 1280×800 Chrome render 확인 | graph는 정답 판정이 아니라 사람이 발화 변화를 확인하는 근거로 제한 |
 | 17:00 | API 제공 조건 정정 | `AGENTS.md`에서 runtime LLM 미확정 전제를 제거하고 OpenAI API $50 및 별도 $2,500 credits 제공 사실을 반영 | 사용자의 2026-09-04 현장 확인 내용과 수정 문구를 대조 | OpenAI API가 제공되지 않을 수 있다는 기존 전제를 명시적으로 거부 |
 | 17:05 | 프로젝트 문서를 개인 wiki로 이관 | repo 참조를 보존하기 위해 원본을 유지하고 Markdown 문서 14개를 개인 wiki의 `05_구현 문서/` 구조로 복사 | source와 destination의 상대 경로·파일 수·내용 checksum을 비교 | 실제 이동 대신 active repo가 깨지지 않는 복사를 선택 |

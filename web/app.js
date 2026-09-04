@@ -1,4 +1,5 @@
 import { transition } from "./state.mjs";
+import { extractPitchContour } from "./pitch.mjs";
 
 let state = "idle";
 let recorder = null;
@@ -10,6 +11,7 @@ let maxTurns = 3;
 let currentTurn = 1;
 let turnPlan = [];
 let tomorrowCard = null;
+let firstContour = [];
 const collectedTargets = [];
 
 const $ = (selector) => document.querySelector(selector);
@@ -49,7 +51,49 @@ function renderTurn() {
   }
   $("#turn-counter").textContent = `对话 ${currentTurn}/${maxTurns}`;
   $("#retry-button").hidden = false;
+  $("#pitch-card").hidden = true;
   $("#next-button").textContent = currentTurn < maxTurns ? "下一段对话" : "完成练习";
+}
+
+async function pitchFromBlob(blob) {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return [];
+  const context = new AudioContextClass();
+  try {
+    const buffer = await context.decodeAudioData(await blob.arrayBuffer());
+    return extractPitchContour(buffer);
+  } catch {
+    return [];
+  } finally {
+    await context.close();
+  }
+}
+
+function contourPoints(contour) {
+  return contour.map(({ time, semitone }) => {
+    const x = 12 + Math.max(0, Math.min(1, time)) * 576;
+    const y = 75 - Math.max(-8, Math.min(8, semitone)) * 7.5;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+}
+
+function pitchRange(contour) {
+  const values = contour.map(({ semitone }) => semitone);
+  return values.length ? Math.max(...values) - Math.min(...values) : 0;
+}
+
+function renderPitchComparison(retryContour) {
+  const card = $("#pitch-card");
+  card.hidden = false;
+  if (firstContour.length < 4 || retryContour.length < 4) {
+    $("#first-contour").setAttribute("points", "");
+    $("#retry-contour").setAttribute("points", "");
+    $("#pitch-summary").textContent = "声音太短，无法比较音高变化。请再录一次。";
+    return;
+  }
+  $("#first-contour").setAttribute("points", contourPoints(firstContour));
+  $("#retry-contour").setAttribute("points", contourPoints(retryContour));
+  $("#pitch-summary").textContent = `第一次 ${firstContour.length} 个有效区间、音高范围 ${pitchRange(firstContour).toFixed(1)} 半音；再试一次 ${retryContour.length} 个有效区间、${pitchRange(retryContour).toFixed(1)} 半音。`;
 }
 
 function showError(message) {
@@ -136,8 +180,9 @@ function renderContext(context) {
   renderTurn();
 }
 
-function renderFeedback(result, audioBlob) {
+function renderFeedback(result, audioBlob, contour) {
   firstResult = result;
+  firstContour = contour;
   const language = result.feedback.language;
   const pronunciation = result.feedback.pronunciation;
   $("#first-transcript").textContent = result.transcript;
@@ -157,7 +202,7 @@ function renderFeedback(result, audioBlob) {
   $("#first-audio").src = firstAudioUrl;
 }
 
-function renderRetryFeedback(result) {
+function renderRetryFeedback(result, retryContour) {
   tomorrowCard = result.tomorrow_card || tomorrowCard;
   const pronunciation = result.feedback.pronunciation;
   $("#first-score").textContent = `${result.comparison.before} → ${result.comparison.after}`;
@@ -166,6 +211,7 @@ function renderRetryFeedback(result) {
   $("#pronunciation-guide").textContent = pronunciation.guide;
   $("#retry-button").hidden = true;
   $("#next-button").textContent = currentTurn < maxTurns ? "下一段对话" : "完成练习";
+  renderPitchComparison(retryContour);
 }
 
 function fallbackCard() {
@@ -214,8 +260,11 @@ $("#context-record").addEventListener("click", async (event) => {
 $("#answer-record").addEventListener("click", async (event) => {
   const button = event.currentTarget;
   await toggleRecording(button, async (blob) => {
-    const result = await postAudio(`/api/attempts?attempt=first&turn=${currentTurn}`, blob);
-    renderFeedback(result, blob);
+    const [result, contour] = await Promise.all([
+      postAudio(`/api/attempts?attempt=first&turn=${currentTurn}`, blob),
+      pitchFromBlob(blob),
+    ]);
+    renderFeedback(result, blob, contour);
     button.disabled = false;
     button.querySelector(".button-copy").textContent = "用韩语回答";
     move("FIRST_ANALYZED");
@@ -231,8 +280,11 @@ $("#retry-button").addEventListener("click", () => {
 $("#retry-record").addEventListener("click", async (event) => {
   const button = event.currentTarget;
   await toggleRecording(button, async (blob) => {
-    const result = await postAudio(`/api/attempts?attempt=retry&turn=${currentTurn}`, blob);
-    renderRetryFeedback(result);
+    const [result, contour] = await Promise.all([
+      postAudio(`/api/attempts?attempt=retry&turn=${currentTurn}`, blob),
+      pitchFromBlob(blob),
+    ]);
+    renderRetryFeedback(result, contour);
     button.disabled = false;
     button.querySelector(".button-copy").textContent = "再说一次";
     move("RETRY_ANALYZED");

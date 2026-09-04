@@ -130,6 +130,26 @@
               </article>
             </div>
 
+            <figure id="pitch-card" class="pitch-card" hidden lang="zh-CN">
+              <figcaption>
+                <div>
+                  <span class="feedback-type">我的音高变化</span>
+                  <strong>第一次和再试一次</strong>
+                </div>
+                <div class="pitch-legend" aria-hidden="true">
+                  <span class="first-line">第一次</span>
+                  <span class="retry-line">再试一次</span>
+                </div>
+              </figcaption>
+              <svg id="pitch-graph" viewBox="0 0 600 150" role="img" aria-labelledby="pitch-summary">
+                <line x1="12" y1="75" x2="588" y2="75" class="pitch-zero"></line>
+                <polyline id="first-contour" class="first-contour" points=""></polyline>
+                <polyline id="retry-contour" class="retry-contour" points=""></polyline>
+              </svg>
+              <p id="pitch-summary">录音后会显示两次声音的高低变化。</p>
+              <p class="pitch-boundary">这是声音变化的比较，不是标准答案或母语者评分。</p>
+            </figure>
+
             <div class="feedback-actions">
               <button id="next-button" class="secondary-button" type="button" lang="zh-CN">下一段对话</button>
               <button id="retry-button" class="primary-button" type="button" lang="zh-CN">用这句话再说一次</button>

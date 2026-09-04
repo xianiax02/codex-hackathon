@@ -20,6 +20,7 @@ Chrome에서 <http://127.0.0.1:8000>을 열고 microphone 권한을 허용한다
 - 상황 → 담임 질문 → 어휘·문법/발음 feedback → 같은 문장 retry → 내일 카드의 전체 화면 흐름
 - 장면 생성 시 세 turn의 목적을 고정하고 `对话 1/3`부터 `对话 3/3`까지 진행
 - 첫 녹음을 browser에서 다시 듣기
+- 첫 발화와 retry의 실제 pitch contour를 browser에서 추출해 겹쳐 보기
 - 빈 audio와 잘못된 content type 거부
 
 ## 아직 fixture인 범위
@@ -48,7 +49,8 @@ POST /api/attempts?attempt=retry&turn=1        raw audio -> retry feedback
 `docs/ai-api-contract.md`의 `scene`, `feedback`, `retry`, `complete` 논리 작업을 호출하고,
 현재 fixture와 같은 frontend JSON으로 조합한다.
 
-`DESIGN.md`의 first/retry pitch contour graph는 승인됐지만 이 draft에는 아직 구현되지 않았다.
+Pitch graph는 YIN으로 75–500Hz voiced frame을 추출하고 각 녹음의 중앙 pitch 기준 semitone으로
+정규화한다. 정확도·정답 판정에는 사용하지 않으며, 유효 frame이 부족하면 graph 대신 재녹음을 안내한다.
 
 ## 검증
 

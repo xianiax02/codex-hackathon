@@ -110,6 +110,20 @@ blockquote { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.7; }
 .status-copy { font-weight: 700; }
 .focus-word b { margin-left: 6px; font-size: 16px; }
 .feedback-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: auto; padding-top: 16px; }
+.pitch-card { margin: 12px 0 0; padding: 14px 18px 10px; border: 1px solid var(--border-default); border-radius: 14px; background: white; }
+.pitch-card[hidden] { display: none; }
+.pitch-card figcaption { display: flex; align-items: center; justify-content: space-between; }
+.pitch-card figcaption strong { font-size: 13px; }
+.pitch-legend { display: flex; gap: 18px; color: var(--text-secondary); font-size: 11px; font-weight: 700; }
+.pitch-legend span::before { content: ""; display: inline-block; width: 24px; margin-right: 6px; border-top: 3px solid var(--accent-primary); vertical-align: middle; }
+.pitch-legend .retry-line::before { border-color: var(--status-success); border-top-style: dashed; }
+#pitch-graph { display: block; width: 100%; height: 105px; margin-top: 4px; overflow: visible; }
+.pitch-zero { stroke: var(--border-default); stroke-width: 1; }
+.first-contour, .retry-contour { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3; vector-effect: non-scaling-stroke; }
+.first-contour { stroke: var(--accent-primary); }
+.retry-contour { stroke: var(--status-success); stroke-dasharray: 8 5; }
+.pitch-card p { margin: 2px 0; color: var(--text-secondary); font-size: 10px; }
+.pitch-boundary { opacity: .82; }
 .primary-button, .secondary-button { min-height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 800; }
 .primary-button { border: 0; color: white; background: var(--accent-primary); }
 .secondary-button { border: 1px solid var(--border-default); color: var(--text-primary); background: white; }
