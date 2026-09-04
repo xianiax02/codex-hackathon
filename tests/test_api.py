@@ -34,11 +34,20 @@ def test_context_audio_returns_rehearsal_scene():
         "/api/context", content=b"audio", headers={"content-type": "audio/webm"}
     )
 
+    body = response.json()
     assert response.status_code == 200
-    assert response.json()["teacher_question"] == "안녕하세요. 무슨 일로 연락 주셨나요?"
-    assert response.json()["analysis_mode"] == "fixture"
-    assert response.json()["max_turns"] == 3
-    assert len(response.json()["turn_plan"]) == 3
+    assert body["teacher_question"] == "언제부터 얼마나 쉬실 예정인가요?"
+    assert body["source_transcript"] == (
+        "我想让孩子从下个月开始停两个月的课。以后想回来上课，应该什么时候联系呢？"
+    )
+    assert body["required_information"] == [
+        "下个月开始",
+        "暂停两个月",
+        "重新上课前的联系时间",
+    ]
+    assert body["analysis_mode"] == "fixture"
+    assert body["max_turns"] == 3
+    assert len(body["turn_plan"]) == 3
 
 
 def test_first_attempt_returns_two_feedback_axes():
@@ -63,7 +72,11 @@ def test_retry_returns_same_sentence_comparison():
     body = response.json()
     assert response.status_code == 200
     assert body["comparison"] == {"before": 68, "after": 76}
-    assert len(body["tomorrow_card"]["sentences"]) == 3
+    assert body["tomorrow_card"]["sentences"] == [
+        "다음 달부터 두 달 동안 아이 학원을 쉬고 싶어요.",
+        "그만두는 건 아니고, 두 달 후에 다시 다니고 싶어요.",
+        "다시 다니려면 언제 연락해야 하나요?",
+    ]
 
 
 def test_each_planned_turn_has_a_distinct_question():

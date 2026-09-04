@@ -27,8 +27,8 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 ```json
 {
   "language": "zh-CN",
-  "situation_transcript": "孩子生病了，明天不能去学校。我要给老师打电话。",
-  "scenario_key": "school_absence"
+  "situation_transcript": "我想让孩子从下个月开始停两个月的课。以后想回来上课，应该什么时候联系呢？",
+  "scenario_key": "academy_pause"
 }
 ```
 
@@ -39,10 +39,10 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 ```json
 {
   "kind": "scene_confirmation",
-  "confirmation_question_zh": "您是想说明孩子明天全天缺席，还是需要提前离校？",
+  "confirmation_question_zh": "您是想暂时停课两个月，之后继续上课，对吗？",
   "known_context": {
-    "partner_zh": "孩子的班主任",
-    "purpose_zh": "说明孩子生病，联系学校",
+    "partner_zh": "补习班老师",
+    "purpose_zh": "说明暂停两个月，并询问重新上课前何时联系",
     "channel_zh": "电话"
   },
   "next_action": "answer_confirmation"
@@ -55,13 +55,13 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 {
   "kind": "scene_ready",
   "scene": {
-    "turn_id": "school-absence-1",
-    "partner_ko": "담임 선생님",
-    "partner_zh": "班主任老师",
-    "purpose_zh": "说明孩子明天因病缺席",
+    "turn_id": "academy-pause-1",
+    "partner_ko": "학원 선생님",
+    "partner_zh": "补习班老师",
+    "purpose_zh": "说明暂停两个月，并询问重新上课前何时联系",
     "channel_zh": "电话",
-    "must_convey_zh": ["孩子明天缺席", "因为生病", "家长身份"],
-    "partner_question_ko": "네, 어머님. 내일 결석하는 건가요?"
+    "must_convey_zh": ["下个月开始", "暂停两个月", "之后想重新上课"],
+    "partner_question_ko": "언제부터 얼마나 쉬실 예정인가요?"
   },
   "next_action": "record_korean_reply"
 }
@@ -73,14 +73,14 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 
 ```json
 {
-  "turn_id": "school-absence-1",
-  "partner_question_ko": "네, 어머님. 내일 결석하는 건가요?",
-  "user_transcript_ko": "선생님, 아이가 아파서 내일 학교 못 갑니다.",
-  "intended_context_zh": "孩子生病，明天全天缺席",
+  "turn_id": "academy-pause-1",
+  "partner_question_ko": "언제부터 얼마나 쉬실 예정인가요?",
+  "user_transcript_ko": "다음 달부터 아이 학원 두 달 쉬고 싶어요.",
+  "intended_context_zh": "从下个月开始暂时停课两个月，之后想继续上课",
   "pronunciation_evidence": {
-    "recognized_text_ko": "선생님 아이가 아파서 내일 학교 못 갑니다",
+    "recognized_text_ko": "다음 달부터 아이 학원 두 달 쉬고 싶어요",
     "signal": { "status": "sufficient", "speech_ratio": 0.71, "clipping_ratio": 0.00 },
-    "changed_or_missing_words_ko": ["못 갑니다"]
+    "changed_or_missing_words_ko": []
   }
 }
 ```
@@ -90,17 +90,17 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 ```json
 {
   "kind": "language_feedback",
-  "spoken_ko": "선생님, 아이가 아파서 내일 학교 못 갑니다.",
+  "spoken_ko": "다음 달부터 아이 학원 두 달 쉬고 싶어요.",
   "corrections": [
     {
-      "priority": "politeness",
-      "label_ko": "더 공손하게 말해요",
-      "spoken_fragment_ko": "학교 못 갑니다",
-      "suggestion_ko": "학교에 가지 못합니다",
-      "explanation_zh": "对老师说明缺席时，用“가지 못합니다”会更礼貌、自然。"
+      "priority": "clarity",
+      "label_ko": "기간을 분명하게 말해요",
+      "spoken_fragment_ko": "아이 학원 두 달",
+      "suggestion_ko": "두 달 동안 아이 학원을",
+      "explanation_zh": "加上“동안”，能清楚表达暂停上课的时间长度。"
     }
   ],
-  "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
+  "target_sentence_ko": "다음 달부터 두 달 동안 아이 학원을 쉬고 싶어요.",
   "pronunciation": {
     "kind": "pronunciation_result",
     "score": 100,
@@ -125,8 +125,8 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 
 ```json
 {
-  "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
-  "recognized_text_ko": "선생님 아이가 아파서 내일 학교에 가지 못합니다",
+  "target_sentence_ko": "다음 달부터 두 달 동안 아이 학원을 쉬고 싶어요.",
+  "recognized_text_ko": "다음 달부터 두 달 동안 아이 학원을 쉬고 싶어요",
   "transcript_match_score": 94,
   "signal": {
     "status": "sufficient",
@@ -147,9 +147,9 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 
 점수는 LLM이 생성하지 않는다. 통합 레이어가 STT 결과와 아래 정책으로 결정한다.
 
-1. **첫 답변 전달도** — 교정문과 비교하지 않는다. `school_absence` 장면의 필수 의미를
-   `아이의 아픔` 35점, `내일` 25점, `학교 결석` 40점으로 두고, 전사문에 인식된 항목의
-   가중치를 합산한다. 예를 들어 `아이 아파서 학교 못 가요`는 `35 + 40 = 75점`이다.
+1. **첫 답변 전달도** — 교정문과 비교하지 않는다. `academy_pause` 장면의 필수 의미를
+   `다음 달 시작` 30점, `두 달` 30점, `학원 휴원` 40점으로 두고, 전사문에 인식된 항목의
+   가중치를 합산한다. 예를 들어 `아이 학원을 두 달 쉬고 싶어요`는 `30 + 40 = 70점`이다.
    문법·존댓말은 이 점수를 깎지 않고 언어 교정 패널에서만 다룬다.
 2. **재시도 전달도** — 목표 문장과 재시도 전사문에서 공백·문장부호를 제거한 한글 음절열을
    비교한다. `score = round(100 × (1 - levenshtein_distance / max_length))`로 계산한다.
@@ -159,8 +159,8 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 정확도 또는 사용자의 한국어 실력 등급이 아니다. 음소 정렬·피치·MFCC 같은 DSP 채점은
 검증된 한국어 기준 데이터와 사람 평가가 확보된 뒤에만 별도 버전으로 추가한다.
 
-`school_absence`의 v1 매처는 형태소 분석이나 LLM 판정을 쓰지 않는다. 공백·문장부호를
-제거한 전사문에서 `아이`와 (`아프` 또는 `아파`), `내일`, `학교`와 (`못가` 또는 `못갑` 또는 `가지못` 또는 `결석`)을
+`academy_pause`의 v1 매처는 형태소 분석이나 LLM 판정을 쓰지 않는다. 공백·문장부호를
+제거한 전사문에서 `다음달`, `두달`, `학원`과 (`쉬` 또는 `휴원` 또는 `잠시중단`)을
 각각 찾는 결정적 규칙이다. 새 장면을 추가할 때만 같은 형식의 필수 의미·가중치·표면형을
 명시적으로 추가한다.
 
@@ -168,9 +168,9 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 
 ```json
 {
-  "turn_id": "school-absence-1",
-  "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
-  "recognized_text_ko": "선생님 아이가 아파서 내일 학교에 가지 못합니다",
+  "turn_id": "academy-pause-1",
+  "target_sentence_ko": "다음 달부터 두 달 동안 아이 학원을 쉬고 싶어요.",
+  "recognized_text_ko": "다음 달부터 두 달 동안 아이 학원을 쉬고 싶어요",
   "previous_score": 100,
   "signal": {
     "status": "sufficient",
@@ -187,7 +187,7 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 ```json
 {
   "kind": "pronunciation_result",
-  "turn_id": "school-absence-1",
+  "turn_id": "academy-pause-1",
   "score": 100,
   "status_ko": "매우 또렷하게 전달됐어요",
   "status_zh": "这句话表达得很清楚。",
@@ -213,11 +213,11 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 {
   "kind": "practice_complete",
   "tomorrow_card": {
-    "sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
-    "anticipated_question_ko": "결석계를 제출해 주실 수 있을까요?",
+    "sentence_ko": "다음 달부터 두 달 동안 아이 학원을 쉬고 싶어요. 다시 다니려면 언제 연락해야 하나요?",
+    "anticipated_question_ko": "학원을 그만두는 건가요, 잠시 쉬는 건가요?",
     "learned_points_zh": [
-      "对老师说话时，用“가지 못합니다”会更礼貌。",
-      "“못합니다”要连起来慢慢说。"
+      "用“두 달 동안”可以清楚表达暂停的时长。",
+      "用“다니려면”可以自然地询问重新上课的条件。"
     ]
   },
   "next_action": "complete"

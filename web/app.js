@@ -226,11 +226,11 @@ function renderRetryFeedback(result, retryContour) {
 function fallbackCard() {
   return {
     sentences: [
-      collectedTargets[0] || "선생님, 민수가 아파서 내일 학교에 가지 못합니다.",
-      collectedTargets[1] || "민수가 열이 조금 나요.",
-      collectedTargets[2] || "내일 상태를 보고 다시 연락드리겠습니다.",
+      collectedTargets[0] || "다음 달부터 두 달 동안 아이 학원을 쉬고 싶어요.",
+      collectedTargets[1] || "그만두는 건 아니고, 두 달 후에 다시 다니고 싶어요.",
+      collectedTargets[2] || "다시 다니려면 언제 연락해야 하나요?",
     ],
-    expected_question: "병원에는 다녀왔나요?",
+    expected_question: "다시 시작하는 것에 대해 궁금한 점이 있으세요?",
   };
 }
 
