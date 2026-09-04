@@ -19,7 +19,8 @@ chk() { # 이름 / 기대(yes|no) / 패턴
 echo "== 들어가야 하는 것 =="
 chk "전역 규칙 (.codex-home/AGENTS.md)" yes "양성 대조를 먼저"
 chk "레포 규칙 (AGENTS.md)"          yes "60초 데모 대본이 스펙"
-chk "제품 정의"                       yes "차집합"
+chk "제품 미정 명시"                  yes "제품은 아직 정해지지 않았다"
+chk "제품 전제 없음 (뉴스/차집합)"    no "차집합"
 chk "systematic-debugging 스킬"       yes "systematic-debugging"
 
 echo "== 들어가면 안 되는 것 =="
