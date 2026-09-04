@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>모두의 한국어</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body data-state="idle">
+    <header class="app-header">
+      <a class="brand" href="/" aria-label="모두의 한국어首页">
+        <span class="brand-mark">모</span>
+        <span>모두의 한국어</span>
+      </a>
+      <ol class="progress" aria-label="练习进度">
+        <li class="active" data-progress="mission" lang="zh-CN">明天的情况</li>
+        <li data-progress="practice" lang="zh-CN">电话练习</li>
+        <li data-progress="review" lang="zh-CN">再说一次</li>
+      </ol>
+      <span class="time-chip" lang="zh-CN">约 10 分钟</span>
+    </header>
+
+    <main class="page-wrap">
+      <div class="eyebrow">TOMORROW'S REHEARSAL</div>
+      <section class="rehearsal-shell">
+        <aside class="context-panel" aria-label="明天的任务" lang="zh-CN">
+          <div class="mission-block">
+            <span class="panel-label">今天的任务</span>
+            <h1 id="mission-title">明天必须说的一句话</h1>
+            <p id="mission-detail">先用中文告诉我们，明天你需要完成什么对话。</p>
+          </div>
+
+          <div class="source-card">
+            <span class="panel-label">我说的情况</span>
+            <blockquote id="source-transcript">还没有录音</blockquote>
+          </div>
+
+          <dl class="brief-list">
+            <div><dt>对方</dt><dd id="counterpart">—</dd></div>
+            <div><dt>目的</dt><dd id="purpose">—</dd></div>
+            <div><dt>方式</dt><dd id="channel">—</dd></div>
+          </dl>
+
+          <div class="required-card">
+            <span class="panel-label">需要说清楚</span>
+            <ul id="required-list">
+              <li>录音后，AI会整理重要信息</li>
+            </ul>
+          </div>
+        </aside>
+
+        <section class="call-panel" aria-labelledby="call-title">
+          <div class="call-header">
+            <div class="avatar" aria-hidden="true">师</div>
+            <div>
+              <span class="panel-label" lang="zh-CN">情境对话</span>
+              <h2 id="call-title" lang="zh-CN">与班主任进行电话练习</h2>
+            </div>
+            <div class="call-meta" lang="zh-CN">
+              <span id="turn-counter" class="turn-counter">对话 0/3</span>
+              <span class="call-status"><i></i><span id="call-status-text">准备情境</span></span>
+            </div>
+          </div>
+
+          <div id="idle-view" class="stage-view active" aria-live="polite">
+            <div class="intro-copy" lang="zh-CN">
+              <span class="step-kicker">STEP 1</span>
+              <h3>明天，你需要完成什么对话？</h3>
+              <p>按下按钮，用中文说出对方和你要完成的事情。</p>
+            </div>
+            <div class="record-zone">
+              <button id="context-record" class="record-button" type="button">
+                <span class="mic-icon" aria-hidden="true"></span>
+                <span class="button-copy" lang="zh-CN">开始说话</span>
+              </button>
+              <p id="context-help" class="action-help" lang="zh-CN">再次按下即可结束录音</p>
+            </div>
+          </div>
+
+          <div id="question-view" class="stage-view" aria-live="polite">
+            <div class="teacher-turn">
+              <span class="speaker-label" lang="zh-CN">班主任老师</span>
+              <p id="teacher-question">안녕하세요. 무슨 일로 연락 주셨나요?</p>
+            </div>
+            <div class="record-zone compact">
+              <button id="answer-record" class="record-button" type="button">
+                <span class="mic-icon" aria-hidden="true"></span>
+                <span class="button-copy" lang="zh-CN">用韩语回答</span>
+              </button>
+              <p id="answer-help" class="action-help" lang="zh-CN">不用怕说错。先把意思说完。</p>
+            </div>
+          </div>
+
+          <div id="feedback-view" class="stage-view" aria-live="polite">
+            <div class="teacher-turn small-turn">
+              <span class="speaker-label" lang="zh-CN">班主任老师</span>
+              <p id="feedback-question">안녕하세요. 무슨 일로 연락 주셨나요?</p>
+            </div>
+
+            <div class="my-answer">
+              <div>
+                <span class="speaker-label" lang="zh-CN">我说的话</span>
+                <p id="first-transcript"></p>
+              </div>
+              <audio id="first-audio" controls aria-label="重听第一次回答"></audio>
+            </div>
+
+            <div class="feedback-grid">
+              <article class="feedback-card language-card" lang="zh-CN">
+                <span class="feedback-type">词汇 · 语法</span>
+                <strong id="language-priority"></strong>
+                <p class="target-sentence" id="language-target" lang="ko"></p>
+                <p id="language-explanation"></p>
+              </article>
+              <article class="feedback-card pronunciation-card">
+                <div class="score-line">
+                  <span class="feedback-type" lang="zh-CN">发音传达度</span>
+                  <strong><span id="first-score">0</span>分</strong>
+                </div>
+                <div class="score-track"><i id="first-score-bar"></i></div>
+                <p id="pronunciation-status" class="status-copy"></p>
+                <p class="focus-word"><span lang="zh-CN">集中练习</span> <b id="focus-word"></b></p>
+                <p id="pronunciation-guide" lang="zh-CN"></p>
+              </article>
+            </div>
+
+            <div class="feedback-actions">
+              <button id="next-button" class="secondary-button" type="button" lang="zh-CN">下一段对话</button>
+              <button id="retry-button" class="primary-button" type="button" lang="zh-CN">用这句话再说一次</button>
+            </div>
+          </div>
+
+          <div id="retry-view" class="stage-view" aria-live="polite">
+            <div class="retry-copy">
+              <span class="step-kicker">STEP 3</span>
+              <p lang="zh-CN">刚才只改这一句</p>
+              <h3 id="retry-target">민수가 열이 나서 오늘 결석합니다.</h3>
+            </div>
+            <div class="record-zone compact">
+              <button id="retry-record" class="record-button" type="button">
+                <span class="mic-icon" aria-hidden="true"></span>
+                <span class="button-copy" lang="zh-CN">再说一次</span>
+              </button>
+              <p id="retry-help" class="action-help" lang="zh-CN">保持刚才练习的速度。</p>
+            </div>
+          </div>
+
+          <div id="complete-view" class="stage-view" aria-live="polite">
+            <div class="result-heading">
+              <div class="success-mark" aria-hidden="true">✓</div>
+              <div>
+                <span class="step-kicker">READY FOR TOMORROW</span>
+                <h3 lang="zh-CN">明天可以直接这样说</h3>
+              </div>
+            </div>
+
+            <div id="comparison" class="comparison" hidden>
+              <span lang="zh-CN">第一次 <b id="before-score">68分</b></span>
+              <i aria-hidden="true">→</i>
+              <span lang="zh-CN">再试一次 <b id="after-score">76分</b></span>
+            </div>
+
+            <ol id="tomorrow-sentences" class="tomorrow-sentences"></ol>
+            <div class="expected-question">
+              <span class="panel-label" lang="zh-CN">老师可能会问</span>
+              <p id="expected-question"></p>
+            </div>
+            <button id="reset-button" class="secondary-button" type="button" lang="zh-CN">练习另一个情况</button>
+          </div>
+
+          <p id="error-message" class="error-message" role="alert" lang="zh-CN"></p>
+        </section>
+      </section>
+
+      <p class="fixture-notice" lang="zh-CN">
+        DEMO：麦克风录音与上传真实运行，语音转写和反馈目前使用固定验证数据。
+      </p>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
