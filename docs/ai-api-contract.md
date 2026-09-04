@@ -103,12 +103,12 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
   "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
   "pronunciation": {
     "kind": "pronunciation_result",
-    "score": 68,
-    "status_ko": "전달 가능해요. 한 번 더 연습할 수 있어요",
-    "status_zh": "对方大致能听懂。用下面的完整句子再练一次吧。",
+    "score": 100,
+    "status_ko": "매우 또렷하게 전달됐어요",
+    "status_zh": "这句话的关键信息表达得很清楚。",
     "evidence": "asr_and_signal",
-    "focus_words_ko": ["못 갑니다"],
-    "practice_hint_zh": "慢一点把“못 갑니다”连起来说。",
+    "focus_words_ko": [],
+    "practice_hint_zh": "可以直接用下面更礼貌的完整句子再练一次。",
     "previous_score": null
   },
   "next_action": "retry_target_sentence"
@@ -130,6 +130,7 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
   "transcript_match_score": 94,
   "signal": {
     "status": "sufficient",
+    "speech_duration_ms": 2410,
     "speech_ratio": 0.71,
     "clipping_ratio": 0.00
   },
@@ -137,15 +138,31 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 }
 ```
 
-`transcript_match_score`는 공백·문장부호를 정규화한 뒤 목표 문장과 STT 결과의 음절
-편집 거리를 0–100으로 환산한다. `signal.status`는 녹음 구간에 음성이 충분히 있고
-클리핑이 심하지 않을 때만 `sufficient`이다. 이 값들은 LLM 입력·출력이 아니다.
+`signal.status`는 Browser Web Audio Worker가 계산한다. 기본 게이트는 음성 구간이 있고,
+`speech_duration_ms >= 700`, `speech_ratio >= 0.30`, `clipping_ratio < 0.02`를 모두
+만족하는 것이다. 하나라도 실패하면 낮은 점수를 주지 않고 `unavailable`과 재녹음 안내를
+반환한다. 이 DSP는 무음·너무 짧은 녹음·클리핑을 판별할 뿐, 한국어 음소를 채점하지 않는다.
 
-점수 산식은 통합 레이어의 교체 가능한 내부 정책이다. 현재는 STT 목표문장 일치도와 녹음
-신호 품질을 근거로 하지만, `score`의 산출 방식·가중치·세부 음성 특징은 API 계약에 넣지
-않는다. 신호가 불충분하면 점수 대신 `unavailable`을 반환한다. 이는 실제 음성에서 나온
-근거를 사용하는 **문장 전달도**이며, 음소·억양의 정확도 또는 사용자의 한국어 실력 등급이
-아니다.
+### 점수 산식 v1
+
+점수는 LLM이 생성하지 않는다. 통합 레이어가 STT 결과와 아래 정책으로 결정한다.
+
+1. **첫 답변 전달도** — 교정문과 비교하지 않는다. `school_absence` 장면의 필수 의미를
+   `아이의 아픔` 35점, `내일` 25점, `학교 결석` 40점으로 두고, 전사문에 인식된 항목의
+   가중치를 합산한다. 예를 들어 `아이 아파서 학교 못 가요`는 `35 + 40 = 75점`이다.
+   문법·존댓말은 이 점수를 깎지 않고 언어 교정 패널에서만 다룬다.
+2. **재시도 전달도** — 목표 문장과 재시도 전사문에서 공백·문장부호를 제거한 한글 음절열을
+   비교한다. `score = round(100 × (1 - levenshtein_distance / max_length))`로 계산한다.
+   이 단계에서만 교정 목표 문장이 기준이 된다.
+
+현재 점수는 실제 음성에서 나온 ASR 결과를 근거로 하는 **문장 전달도**이며, 음소·억양의
+정확도 또는 사용자의 한국어 실력 등급이 아니다. 음소 정렬·피치·MFCC 같은 DSP 채점은
+검증된 한국어 기준 데이터와 사람 평가가 확보된 뒤에만 별도 버전으로 추가한다.
+
+`school_absence`의 v1 매처는 형태소 분석이나 LLM 판정을 쓰지 않는다. 공백·문장부호를
+제거한 전사문에서 `아이`와 (`아프` 또는 `아파`), `내일`, `학교`와 (`못가` 또는 `못갑` 또는 `가지못` 또는 `결석`)을
+각각 찾는 결정적 규칙이다. 새 장면을 추가할 때만 같은 형식의 필수 의미·가중치·표면형을
+명시적으로 추가한다.
 
 ### 요청: retry 논리 작업
 
@@ -154,9 +171,10 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
   "turn_id": "school-absence-1",
   "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
   "recognized_text_ko": "선생님 아이가 아파서 내일 학교에 가지 못합니다",
-  "previous_score": 68,
+  "previous_score": 100,
   "signal": {
     "status": "sufficient",
+    "speech_duration_ms": 2410,
     "speech_ratio": 0.71,
     "clipping_ratio": 0.00
   },
@@ -170,13 +188,13 @@ STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
 {
   "kind": "pronunciation_result",
   "turn_id": "school-absence-1",
-  "score": 95,
+  "score": 100,
   "status_ko": "매우 또렷하게 전달됐어요",
   "status_zh": "这句话表达得很清楚。",
   "evidence": "asr_and_signal",
   "focus_words_ko": [],
   "practice_hint_zh": "保持刚才的速度即可。",
-  "previous_score": 68,
+  "previous_score": 100,
   "next_action": "next_question"
 }
 ```

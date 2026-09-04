@@ -30,12 +30,11 @@
       "recognized_text_ko": "선생님 아이가 아파서 내일 학교 못 갑니다",
       "signal": {
         "status": "sufficient",
+        "speech_duration_ms": 2410,
         "speech_ratio": 0.71,
         "clipping_ratio": 0.0
       },
-      "changed_or_missing_words_ko": [
-        "못 갑니다"
-      ]
+      "changed_or_missing_words_ko": []
     }
   },
   "feedback_response": {
@@ -53,14 +52,12 @@
     "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
     "pronunciation": {
       "kind": "pronunciation_result",
-      "score": 68,
-      "status_ko": "전달 가능해요. 한 번 더 연습할 수 있어요",
-      "status_zh": "对方大致能听懂。用下面的完整句子再练一次吧。",
+      "score": 100,
+      "status_ko": "매우 또렷하게 전달됐어요",
+      "status_zh": "这句话的关键信息表达得很清楚。",
       "evidence": "asr_and_signal",
-      "focus_words_ko": [
-        "못 갑니다"
-      ],
-      "practice_hint_zh": "慢一点把“못 갑니다”连起来说。",
+      "focus_words_ko": [],
+      "practice_hint_zh": "可以直接用下面更礼貌的完整句子再练一次。",
       "previous_score": null
     },
     "next_action": "retry_target_sentence"
@@ -69,9 +66,10 @@
     "turn_id": "school-absence-1",
     "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
     "recognized_text_ko": "선생님 아이가 아파서 내일 학교에 가지 못합니다",
-    "previous_score": 68,
+    "previous_score": 100,
     "signal": {
       "status": "sufficient",
+      "speech_duration_ms": 2410,
       "speech_ratio": 0.71,
       "clipping_ratio": 0.0
     },
@@ -80,15 +78,13 @@
   "retry_response": {
     "kind": "pronunciation_result",
     "turn_id": "school-absence-1",
-    "score": 76,
-    "status_ko": "또렷하게 전달됐어요",
+    "score": 100,
+    "status_ko": "매우 또렷하게 전달됐어요",
     "status_zh": "这句话表达得很清楚。",
     "evidence": "asr_and_signal",
-    "focus_words_ko": [
-      "못합니다"
-    ],
-    "practice_hint_zh": "“못합니다”要连起来，慢一点说“모탐니다”。",
-    "previous_score": 68,
+    "focus_words_ko": [],
+    "practice_hint_zh": "保持刚才的速度即可。",
+    "previous_score": 100,
     "next_action": "next_question"
   },
   "complete_response": {
