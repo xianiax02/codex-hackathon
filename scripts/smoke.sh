@@ -6,7 +6,7 @@ smoke_port="${SMOKE_PORT:-8765}"
 smoke_url="http://127.0.0.1:${smoke_port}"
 log_file="$(mktemp /tmp/modu-korean-smoke.XXXXXX)"
 
-.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port "$smoke_port" >"$log_file" 2>&1 &
+OPENAI_API_KEY= .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port "$smoke_port" >"$log_file" 2>&1 &
 server_pid=$!
 cleanup() {
   kill "$server_pid" 2>/dev/null || true

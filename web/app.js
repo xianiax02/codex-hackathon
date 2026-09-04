@@ -100,6 +100,12 @@ function showError(message) {
   $("#error-message").textContent = message;
 }
 
+function renderAnalysisMode(mode) {
+  $("#analysis-notice").textContent = mode === "live"
+    ? "LIVE：语音转写、语言反馈和重试分数根据本次录音生成。"
+    : "FIXTURE：语音转写或 AI 调用不可用，正在使用固定验证数据。";
+}
+
 async function postAudio(path, blob) {
   const response = await fetch(path, {
     method: "POST",
@@ -160,6 +166,7 @@ async function toggleRecording(button, onComplete) {
 }
 
 function renderContext(context) {
+  renderAnalysisMode(context.analysis_mode);
   maxTurns = context.max_turns || 3;
   turnPlan = context.turn_plan || [];
   $("#mission-title").textContent = context.mission;
@@ -181,6 +188,7 @@ function renderContext(context) {
 }
 
 function renderFeedback(result, audioBlob, contour) {
+  renderAnalysisMode(result.analysis_mode);
   firstResult = result;
   firstContour = contour;
   const language = result.feedback.language;
@@ -203,6 +211,7 @@ function renderFeedback(result, audioBlob, contour) {
 }
 
 function renderRetryFeedback(result, retryContour) {
+  renderAnalysisMode(result.analysis_mode);
   tomorrowCard = result.tomorrow_card || tomorrowCard;
   const pronunciation = result.feedback.pronunciation;
   $("#first-score").textContent = `${result.comparison.before} → ${result.comparison.after}`;
@@ -260,8 +269,13 @@ $("#context-record").addEventListener("click", async (event) => {
 $("#answer-record").addEventListener("click", async (event) => {
   const button = event.currentTarget;
   await toggleRecording(button, async (blob) => {
+    const parameters = new URLSearchParams({
+      attempt: "first",
+      turn: String(currentTurn),
+      teacher_question: turnPlan[currentTurn - 1]?.teacher_question_ko || "",
+    });
     const [result, contour] = await Promise.all([
-      postAudio(`/api/attempts?attempt=first&turn=${currentTurn}`, blob),
+      postAudio(`/api/attempts?${parameters}`, blob),
       pitchFromBlob(blob),
     ]);
     renderFeedback(result, blob, contour);
@@ -280,8 +294,15 @@ $("#retry-button").addEventListener("click", () => {
 $("#retry-record").addEventListener("click", async (event) => {
   const button = event.currentTarget;
   await toggleRecording(button, async (blob) => {
+    const parameters = new URLSearchParams({
+      attempt: "retry",
+      turn: String(currentTurn),
+      teacher_question: turnPlan[currentTurn - 1]?.teacher_question_ko || "",
+      target_sentence: collectedTargets[currentTurn - 1] || "",
+      previous_score: String(firstResult?.feedback.pronunciation.score ?? ""),
+    });
     const [result, contour] = await Promise.all([
-      postAudio(`/api/attempts?attempt=retry&turn=${currentTurn}`, blob),
+      postAudio(`/api/attempts?${parameters}`, blob),
       pitchFromBlob(blob),
     ]);
     renderRetryFeedback(result, contour);

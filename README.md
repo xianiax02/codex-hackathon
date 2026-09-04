@@ -23,16 +23,21 @@ Chrome에서 <http://127.0.0.1:8000>을 열고 microphone 권한을 허용한다
 - 첫 발화와 retry의 실제 pitch contour를 browser에서 추출해 겹쳐 보기
 - 빈 audio와 잘못된 content type 거부
 
-## 아직 fixture인 범위
+## AI 실행과 fixture 폴백
 
-- 중국어·한국어 speech-to-text
-- 어휘·문법 교정 생성
-- 발음 전달도 점수와 집중 단어 산출
-- retry 점수 비교와 내일 카드 생성
+`.env`에 아래 값을 넣으면 첫 1회전은 실제 OpenAI 호출로 동작한다. 상황 녹음은 중국어 STT와
+장면 생성으로, 첫 한국어 답변은 한국어 STT와 구조화된 언어 코칭으로 처리한다. 재시도 점수는
+LLM이 아닌 목표 문장과 새 STT 결과의 결정적 편집거리 비교로 계산한다.
 
-화면 하단과 `GET /api/health`의 `analysis_mode`가 이 범위를 `fixture`로 명시한다. 유현님이 소유한
-`ai/`와 `docs/ai-api-contract.md`가 준비되면 `app/main.py`의 세 endpoint 내부만 실제 AI 호출로
-교체하고, frontend JSON 모양은 유지한다.
+```bash
+OPENAI_API_KEY=...
+OPENAI_STT_MODEL=gpt-4o-transcribe
+OPENAI_COACH_MODEL=gpt-5.6-luna
+```
+
+키가 없거나 STT·코칭 호출이 실패하면 같은 frontend JSON의 fixture를 반환한다. 이때 `GET /api/health`는
+`analysis_mode: fixture`를, 키가 설정된 경우에는 `analysis_mode: live`를 반환한다. fixture 모드의
+3-turn 데모 흐름은 그대로 보존한다.
 
 ## Backend 연결 지점
 
@@ -45,9 +50,9 @@ POST /api/attempts?attempt=first&turn=1        raw audio -> first feedback
 POST /api/attempts?attempt=retry&turn=1        raw audio -> retry feedback
 ```
 
-`turn`은 `1`, `2`, `3`만 허용한다. Backend는 raw audio를 STT로 전사한 뒤
-`docs/ai-api-contract.md`의 `scene`, `feedback`, `retry`, `complete` 논리 작업을 호출하고,
-현재 fixture와 같은 frontend JSON으로 조합한다.
+`turn`은 `1`, `2`, `3`만 허용한다. 라이브 모드는 60초 데모 범위인 첫 turn만 실제로 분석하고,
+나머지 turn은 fixture 흐름으로 유지한다. Browser는 retry 때 같은 목표 문장과 첫 점수를 함께 보내므로
+서버가 세션 상태를 저장하지 않고 새 전사 결과를 비교할 수 있다.
 
 Pitch graph는 YIN으로 75–500Hz voiced frame을 추출하고 각 녹음의 중앙 pitch 기준 semitone으로
 정규화한다. 정확도·정답 판정에는 사용하지 않으며, 유효 frame이 부족하면 graph 대신 재녹음을 안내한다.

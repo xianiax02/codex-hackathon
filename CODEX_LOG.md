@@ -14,3 +14,4 @@
 | 17:05–진행 중 | first/retry 음고 graph 추가 | 실제 browser audio에서 YIN으로 75–500Hz pitch를 추출하고 speaker-relative semitone SVG를 overlay | 220Hz sine 검출, silence abstention, semitone normalization 3건 test와 1280×800 Chrome render 확인 | graph는 정답 판정이 아니라 사람이 발화 변화를 확인하는 근거로 제한 |
 | 17:00 | API 제공 조건 정정 | `AGENTS.md`에서 runtime LLM 미확정 전제를 제거하고 OpenAI API $50 및 별도 $2,500 credits 제공 사실을 반영 | 사용자의 2026-09-04 현장 확인 내용과 수정 문구를 대조 | OpenAI API가 제공되지 않을 수 있다는 기존 전제를 명시적으로 거부 |
 | 17:05 | 프로젝트 문서를 개인 wiki로 이관 | repo 참조를 보존하기 위해 원본을 유지하고 Markdown 문서 14개를 개인 wiki의 `05_구현 문서/` 구조로 복사 | source와 destination의 상대 경로·파일 수·내용 checksum을 비교 | 실제 이동 대신 active repo가 깨지지 않는 복사를 선택 |
+| 17:15–17:25 | 준현님 3-turn draft 기준 실제 AI 1회전 통합 | 기존 `/api/context`·`/api/attempts` JSON을 유지하고 OpenAI STT, Structured Outputs 언어 코칭, 결정적 재시도 점수, fixture 폴백을 연결 | fixture·라이브 계약 11건, 화면 상태 3건, fixture smoke와 로컬 브라우저 렌더링 통과; 키 설정 서버가 `live` 모드로 응답 | 라이브 분석은 60초 데모의 첫 turn만, 3-turn fixture는 폴백으로 보존 |
