@@ -1,4 +1,6 @@
-from typing import Literal
+from __future__ import annotations
+
+from typing import Literal, Optional
 
 from openai import OpenAI, OpenAIError
 from pydantic import BaseModel, Field, SecretStr
@@ -8,7 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    openai_api_key: SecretStr | None = None
+    openai_api_key: Optional[SecretStr] = None
     openai_stt_model: str = "gpt-4o-transcribe"
     openai_coach_model: str = "gpt-5.6-luna"
 
@@ -51,7 +53,7 @@ class RehearsalAI:
             api_key=settings.openai_api_key.get_secret_value(), timeout=20.0
         )
 
-    def transcribe(self, audio: bytes, content_type: str, language: str) -> str | None:
+    def transcribe(self, audio: bytes, content_type: str, language: str) -> Optional[str]:
         try:
             response = self._client.audio.transcriptions.create(
                 file=("recording.webm", audio, content_type),
@@ -63,7 +65,7 @@ class RehearsalAI:
         transcript = response.text.strip()
         return transcript or None
 
-    def create_scene(self, situation_transcript: str) -> ScenePlan | None:
+    def create_scene(self, situation_transcript: str) -> Optional[ScenePlan]:
         try:
             response = self._client.responses.parse(
                 model=self._settings.openai_coach_model,
@@ -71,7 +73,8 @@ class RehearsalAI:
                     "You plan one short Korean phone rehearsal for a Mandarin-speaking "
                     "parent. Use only facts in the Chinese situation transcript. Return "
                     "simplified Chinese for all *_zh fields and one polite Korean teacher "
-                    "question. Do not score pronunciation or invent names, dates, or facts."
+                    "question. Do not score pronunciation or invent names, dates, academy "
+                    "policies, fees, refund terms, or re-enrollment availability."
                 ),
                 input=f"Chinese situation transcript: {situation_transcript}",
                 text_format=ScenePlan,
@@ -82,7 +85,7 @@ class RehearsalAI:
 
     def coach_language(
         self, teacher_question: str, transcript: str
-    ) -> LanguageFeedback | None:
+    ) -> Optional[LanguageFeedback]:
         try:
             response = self._client.responses.parse(
                 model=self._settings.openai_coach_model,
@@ -91,7 +94,8 @@ class RehearsalAI:
                     "Use only the spoken Korean and teacher question. Return at most one "
                     "language correction, preserve the user's meaning, and write the "
                     "explanation in simplified Chinese. Never assess pronunciation, score, "
-                    "or claim an error that is absent from the transcript."
+                    "or claim an error that is absent from the transcript. Do not invent "
+                    "academy policies, fees, or re-enrollment availability."
                 ),
                 input=(
                     f"Teacher question: {teacher_question}\n"

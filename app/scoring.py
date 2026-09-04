@@ -8,12 +8,12 @@ def _hangul_only(text: str) -> str:
 def first_attempt_score(transcript: str) -> int:
     normalized = _hangul_only(transcript)
     score = 0
-    if "아이" in normalized and ("아프" in normalized or "아파" in normalized):
-        score += 35
-    if "내일" in normalized:
-        score += 25
-    if "학교" in normalized and any(
-        marker in normalized for marker in ("못가", "못갑", "가지못", "결석")
+    if "다음달" in normalized:
+        score += 30
+    if "두달" in normalized:
+        score += 30
+    if "학원" in normalized and any(
+        marker in normalized for marker in ("쉬", "휴원", "잠시중단")
     ):
         score += 40
     return score

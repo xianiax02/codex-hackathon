@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
@@ -67,13 +69,14 @@ async def create_context(request: Request):
             "purpose": scene.purpose_zh,
             "channel": scene.channel_zh,
             "required_information": scene.required_information_zh,
-            "max_turns": 1,
+            "max_turns": 3,
             "turn_plan": [
                 {
                     "turn": 1,
                     "objective_zh": scene.mission_zh,
                     "teacher_question_ko": scene.teacher_question_ko,
-                }
+                },
+                *TURN_PLAN[1:],
             ],
             "teacher_question": scene.teacher_question_ko,
         }
@@ -85,9 +88,9 @@ async def analyze_attempt(
     request: Request,
     attempt: Literal["first", "retry"] = "first",
     turn: int = Query(1, ge=1, le=3),
-    teacher_question: str | None = Query(None, max_length=200),
-    target_sentence: str | None = Query(None, max_length=300),
-    previous_score: int | None = Query(None, ge=0, le=100),
+    teacher_question: Optional[str] = Query(None, max_length=200),
+    target_sentence: Optional[str] = Query(None, max_length=300),
+    previous_score: Optional[int] = Query(None, ge=0, le=100),
 ):
     audio = await require_audio(request)
     if not rehearsal_ai or turn != 1:
