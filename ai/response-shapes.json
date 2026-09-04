@@ -32,12 +32,13 @@
         "scene": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["turn_id", "partner_ko", "partner_zh", "purpose_zh", "must_convey_zh", "partner_question_ko"],
+          "required": ["turn_id", "partner_ko", "partner_zh", "purpose_zh", "channel_zh", "must_convey_zh", "partner_question_ko"],
           "properties": {
             "turn_id": { "type": "string" },
             "partner_ko": { "type": "string" },
             "partner_zh": { "type": "string" },
             "purpose_zh": { "type": "string" },
+            "channel_zh": { "type": "string" },
             "must_convey_zh": { "type": "array", "items": { "type": "string" } },
             "partner_question_ko": { "type": "string" }
           }
@@ -48,7 +49,7 @@
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "spoken_ko", "corrections", "target_sentence_ko", "next_action"],
+      "required": ["kind", "spoken_ko", "corrections", "target_sentence_ko", "pronunciation", "next_action"],
       "properties": {
         "kind": { "const": "language_feedback" },
         "spoken_ko": { "type": "string" },
@@ -68,7 +69,69 @@
           }
         },
         "target_sentence_ko": { "type": "string" },
+        "pronunciation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "score", "status_ko", "status_zh", "evidence", "focus_words_ko", "practice_hint_zh", "previous_score"],
+          "properties": {
+            "kind": { "const": "pronunciation_result" },
+            "score": { "type": "integer" },
+            "status_ko": { "type": "string" },
+            "status_zh": { "type": "string" },
+            "evidence": { "enum": ["asr_and_signal", "insufficient_audio"] },
+            "focus_words_ko": { "type": "array", "items": { "type": "string" } },
+            "practice_hint_zh": { "type": "string" },
+            "previous_score": { "type": ["integer", "null"] }
+          }
+        },
         "next_action": { "enum": ["retry_target_sentence", "next_question"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "turn_id", "score", "status_ko", "status_zh", "evidence", "focus_words_ko", "practice_hint_zh", "previous_score", "next_action"],
+      "properties": {
+        "kind": { "const": "pronunciation_result" },
+        "turn_id": { "type": "string" },
+        "score": { "type": "integer" },
+        "status_ko": { "type": "string" },
+        "status_zh": { "type": "string" },
+        "evidence": { "enum": ["asr_and_signal", "insufficient_audio"] },
+        "focus_words_ko": { "type": "array", "items": { "type": "string" } },
+        "practice_hint_zh": { "type": "string" },
+        "previous_score": { "type": "integer" },
+        "next_action": { "enum": ["next_question", "complete"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "code", "message_zh", "next_action"],
+      "properties": {
+        "kind": { "const": "input_error" },
+        "code": { "enum": ["CHINESE_TRANSCRIPT_UNAVAILABLE", "KOREAN_TRANSCRIPT_UNAVAILABLE", "AUDIO_SIGNAL_INSUFFICIENT", "AI_RESPONSE_UNAVAILABLE"] },
+        "message_zh": { "type": "string" },
+        "next_action": { "enum": ["answer_confirmation", "record_korean_reply", "retry_target_sentence"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "tomorrow_card", "next_action"],
+      "properties": {
+        "kind": { "const": "practice_complete" },
+        "tomorrow_card": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sentence_ko", "anticipated_question_ko", "learned_points_zh"],
+          "properties": {
+            "sentence_ko": { "type": "string" },
+            "anticipated_question_ko": { "type": "string" },
+            "learned_points_zh": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "next_action": { "const": "complete" }
       }
     }
   ]

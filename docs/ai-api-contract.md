@@ -6,9 +6,11 @@
 레이어의 책임이고, AI는 이미 전사된 문장을 바탕으로 장면과 언어 코칭만 만든다. 따라서
 LLM이 발음 점수나 실제로 듣지 못한 음소 오류를 만들면 안 된다.
 
-기본 구현은 `POST /api/ai/scene`, `POST /api/ai/feedback`, `POST /api/ai/retry` 세
-호출이다. 데모 중 키가 없으면 `ai/demo-fixtures.json`의 같은 응답을 그대로 반환해도
-UI 계약은 바뀌지 않는다.
+`scene`, `feedback`, `retry`, `complete`는 AI 통합 레이어의 **논리 작업 이름**이다. 현재
+브라우저 API인 `/api/context`와 `/api/attempts`는 raw audio를 받고 STT를 수행한 뒤 이
+작업으로 변환한다. 따라서 프론트는 기존 라우트를 유지하고, 통합 레이어만 이 문서의
+STT 완료 JSON과 UI 응답 JSON을 연결한다. 데모 중 키가 없으면
+`ai/demo-fixtures.json`의 같은 응답을 그대로 반환해도 UI 계약은 바뀌지 않는다.
 
 ## 공통 규칙
 
@@ -57,6 +59,7 @@ UI 계약은 바뀌지 않는다.
     "partner_ko": "담임 선생님",
     "partner_zh": "班主任老师",
     "purpose_zh": "说明孩子明天因病缺席",
+    "channel_zh": "电话",
     "must_convey_zh": ["孩子明天缺席", "因为生病", "家长身份"],
     "partner_question_ko": "네, 어머님. 내일 결석하는 건가요?"
   },
@@ -73,7 +76,12 @@ UI 계약은 바뀌지 않는다.
   "turn_id": "school-absence-1",
   "partner_question_ko": "네, 어머님. 내일 결석하는 건가요?",
   "user_transcript_ko": "선생님, 아이가 아파서 내일 학교 못 갑니다.",
-  "intended_context_zh": "孩子生病，明天全天缺席"
+  "intended_context_zh": "孩子生病，明天全天缺席",
+  "pronunciation_evidence": {
+    "recognized_text_ko": "선생님 아이가 아파서 내일 학교 못 갑니다",
+    "signal": { "status": "sufficient", "speech_ratio": 0.71, "clipping_ratio": 0.00 },
+    "changed_or_missing_words_ko": ["못 갑니다"]
+  }
 }
 ```
 
@@ -93,6 +101,16 @@ UI 계약은 바뀌지 않는다.
     }
   ],
   "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
+  "pronunciation": {
+    "kind": "pronunciation_result",
+    "score": 68,
+    "status_ko": "전달 가능해요. 한 번 더 연습할 수 있어요",
+    "status_zh": "对方大致能听懂。用下面的完整句子再练一次吧。",
+    "evidence": "asr_and_signal",
+    "focus_words_ko": ["못 갑니다"],
+    "practice_hint_zh": "慢一点把“못 갑니다”连起来说。",
+    "previous_score": null
+  },
   "next_action": "retry_target_sentence"
 }
 ```
@@ -129,7 +147,24 @@ UI 계약은 바뀌지 않는다.
 근거를 사용하는 **문장 전달도**이며, 음소·억양의 정확도 또는 사용자의 한국어 실력 등급이
 아니다.
 
-### 응답: `POST /api/ai/retry`
+### 요청: retry 논리 작업
+
+```json
+{
+  "turn_id": "school-absence-1",
+  "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
+  "recognized_text_ko": "선생님 아이가 아파서 내일 학교에 가지 못합니다",
+  "previous_score": 68,
+  "signal": {
+    "status": "sufficient",
+    "speech_ratio": 0.71,
+    "clipping_ratio": 0.00
+  },
+  "changed_or_missing_words_ko": []
+}
+```
+
+### 응답: retry 논리 작업
 
 ```json
 {
@@ -150,6 +185,26 @@ UI 계약은 바뀌지 않는다.
 전달됐어요`, `또렷하게 전달됐어요`, `전달 가능해요. 한 번 더 연습할 수 있어요`, `천천히
 한 번 더 말해볼까요?`로 표시한다. `focus_words_ko`는 `changed_or_missing_words_ko`에서만
 고르며, 신호가 불충분하면 빈 배열과 `evidence: "insufficient_audio"`를 반환한다.
+
+## 4. 마무리 카드
+
+사용자가 `다음으로`를 선택하면 통합 레이어는 `complete` 논리 작업으로 마지막 장면과
+방금 확정한 문장을 전달한다. UI는 아래 응답의 `tomorrow_card`를 그대로 렌더링한다.
+
+```json
+{
+  "kind": "practice_complete",
+  "tomorrow_card": {
+    "sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
+    "anticipated_question_ko": "결석계를 제출해 주실 수 있을까요?",
+    "learned_points_zh": [
+      "对老师说话时，用“가지 못합니다”会更礼貌。",
+      "“못합니다”要连起来慢慢说。"
+    ]
+  },
+  "next_action": "complete"
+}
+```
 
 ## 실패 응답
 
