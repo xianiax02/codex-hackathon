@@ -1,0 +1,58 @@
+{
+  "scene_request": {
+    "language": "zh-CN",
+    "situation_transcript": "孩子生病了，明天不能去学校。我要给老师打电话。",
+    "scenario_key": "school_absence"
+  },
+  "scene_response": {
+    "kind": "scene_ready",
+    "scene": {
+      "turn_id": "school-absence-1",
+      "partner_ko": "담임 선생님",
+      "partner_zh": "班主任老师",
+      "purpose_zh": "说明孩子明天因病缺席",
+      "must_convey_zh": [
+        "孩子明天缺席",
+        "因为生病",
+        "家长身份"
+      ],
+      "partner_question_ko": "네, 어머님. 내일 결석하는 건가요?"
+    },
+    "next_action": "record_korean_reply"
+  },
+  "feedback_request": {
+    "turn_id": "school-absence-1",
+    "partner_question_ko": "네, 어머님. 내일 결석하는 건가요?",
+    "user_transcript_ko": "선생님, 아이가 아파서 내일 학교 못 갑니다.",
+    "intended_context_zh": "孩子生病，明天全天缺席"
+  },
+  "feedback_response": {
+    "kind": "language_feedback",
+    "spoken_ko": "선생님, 아이가 아파서 내일 학교 못 갑니다.",
+    "corrections": [
+      {
+        "priority": "politeness",
+        "label_ko": "더 공손하게 말해요",
+        "spoken_fragment_ko": "학교 못 갑니다",
+        "suggestion_ko": "학교에 가지 못합니다",
+        "explanation_zh": "对老师说明缺席时，用“가지 못합니다”会更礼貌、自然。"
+      }
+    ],
+    "target_sentence_ko": "선생님, 아이가 아파서 내일 학교에 가지 못합니다.",
+    "next_action": "retry_target_sentence"
+  },
+  "retry_response": {
+    "kind": "pronunciation_result",
+    "turn_id": "school-absence-1",
+    "score": 76,
+    "status_ko": "또렷하게 전달됐어요",
+    "status_zh": "这句话表达得很清楚。",
+    "evidence": "asr_and_signal",
+    "focus_words_ko": [
+      "못합니다"
+    ],
+    "practice_hint_zh": "“못합니다”要连起来，慢一点说“모탐니다”。",
+    "previous_score": 68,
+    "next_action": "next_question"
+  }
+}

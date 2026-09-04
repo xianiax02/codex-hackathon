@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tomorrows-korean.local/ai/response-shapes.json",
+  "title": "Tomorrow Korean AI response shapes",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "confirmation_question_zh", "known_context", "next_action"],
+      "properties": {
+        "kind": { "const": "scene_confirmation" },
+        "confirmation_question_zh": { "type": "string" },
+        "known_context": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["partner_zh", "purpose_zh", "channel_zh"],
+          "properties": {
+            "partner_zh": { "type": "string" },
+            "purpose_zh": { "type": "string" },
+            "channel_zh": { "type": "string" }
+          }
+        },
+        "next_action": { "const": "answer_confirmation" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "scene", "next_action"],
+      "properties": {
+        "kind": { "const": "scene_ready" },
+        "scene": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["turn_id", "partner_ko", "partner_zh", "purpose_zh", "must_convey_zh", "partner_question_ko"],
+          "properties": {
+            "turn_id": { "type": "string" },
+            "partner_ko": { "type": "string" },
+            "partner_zh": { "type": "string" },
+            "purpose_zh": { "type": "string" },
+            "must_convey_zh": { "type": "array", "items": { "type": "string" } },
+            "partner_question_ko": { "type": "string" }
+          }
+        },
+        "next_action": { "const": "record_korean_reply" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "spoken_ko", "corrections", "target_sentence_ko", "next_action"],
+      "properties": {
+        "kind": { "const": "language_feedback" },
+        "spoken_ko": { "type": "string" },
+        "corrections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["priority", "label_ko", "spoken_fragment_ko", "suggestion_ko", "explanation_zh"],
+            "properties": {
+              "priority": { "enum": ["meaning", "clarity", "politeness", "naturalness"] },
+              "label_ko": { "type": "string" },
+              "spoken_fragment_ko": { "type": "string" },
+              "suggestion_ko": { "type": "string" },
+              "explanation_zh": { "type": "string" }
+            }
+          }
+        },
+        "target_sentence_ko": { "type": "string" },
+        "next_action": { "enum": ["retry_target_sentence", "next_question"] }
+      }
+    }
+  ]
+}
